@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Will you be my Valentine?</title>
+    <style>
+        :root{
+            --bg1: #fff0f6;
+            --bg2: #ffeef2;
+            --card: #fff;
+            --accent: #ff6b9a;
+            --text: #333;
+        }
+        html,body {
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fff7f1, #fde2d9);
+            font-family: "Poppins", system-ui, sans-serif;
+            color: #4a3f3b;
+        }
+
+        .wrap {
+            min-height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:32px;
+        }
+
+        .card {
+            background: #fffaf7;
+            border-radius: 26px;
+            padding: 38px;
+            box-shadow: 0 18px 50px rgba(90, 60, 40, 0.12);
+        }
+        /* container spans full card */
+
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        p.lead {
+            margin:0 0 20px;
+            color:#555;
+        }
+
+        /* playground area where buttons roam */
+        .playground {
+            width:100%;
+            height: 260px;
+            margin-top:18px;
+            position:relative;
+            border-radius:12px;
+            background: linear-gradient(180deg, rgba(255,235,243,0.6), rgba(255,245,248,0.8));
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        /* central message inside the playground */
+        .prompt {
+            pointer-events: none;
+            position:absolute;
+            top:22px;
+            left:50%;
+            transform:translateX(-50%);
+            font-weight:600;
+            color:#c2185b;
+            letter-spacing:0.4px;
+        }
+
+        /* base styles for buttons */
+        .btn {
+            position:absolute;
+            min-width:110px;
+            padding:12px 18px;
+            border-radius:999px;
+            border: none;
+            cursor:pointer;
+            font-weight:700;
+            font-size:1rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            transition: transform 160ms ease, left 250ms ease, top 250ms ease;
+            user-select:none;
+        }
+
+        #yes {
+            background: linear-gradient(135deg, #f08ca3, #e26d88);
+            box-shadow: 0 12px 28px rgba(226, 109, 136, 0.4);
+        }
+
+        #yes:hover {
+            transform: scale(1.05);
+        }
+
+        #no {
+            background: #fff;
+            color: #888;
+            border: 1.5px solid #f2c4d3;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+        }
+
+        /* overlay shown after Yes */
+        .overlay {
+            position:absolute;
+            inset:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background: rgba(0,0,0,0.32);
+            z-index:40;
+            animation: fadeIn .28s ease;
+        }
+        .overlayCard{
+            background: linear-gradient(180deg,#fff,#fff7fb);
+            padding:26px 32px;
+            border-radius:14px;
+            text-align:center;
+            box-shadow: 0 18px 60px rgba(194,24,91,0.12);
+        }
+        .overlayCard h2{
+            margin:0 0 6px;
+            color:#b00048;
+        }
+        .overlayCard p{
+            margin:0 0 12px;
+            color:#444;
+        }
+
+        @keyframes floatHeart {
+            0% { transform: translateY(0) scale(1); opacity:1; }
+            100% { transform: translateY(-160px) scale(1.35); opacity:0; }
+        }
+
+        .hearts {
+            position:absolute;
+            pointer-events:none;
+            inset:0;
+            z-index:30;
+        }
+        .heart {
+            position:absolute;
+            width:20px;
+            height:20px;
+            transform-origin:center;
+            animation: floatHeart 1200ms ease-out forwards;
+        }
+
+        @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+        @media (max-width:520px){
+            .playground { height: 220px; }
+            .btn { min-width:92px; padding:10px 14px; font-size:0.9rem; }
+        }
+
+        .floating-photos {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* shared image styling */
+        .float-img {
+            position: absolute;
+            width: 165px;   /* 110 × 1.5 */
+            height: 210px;  /* 140 × 1.5 */
+            object-fit: cover;
+            border-radius: 18px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+        }
+
+        /* animation paths */
+        @keyframes rectangleMove {
+            0%   { top: 20px; left: 20px; }
+            25%  { top: 20px; left: calc(100% - 185px); }
+            50%  { top: calc(100% - 235px); left: calc(100% - 185px); }
+            75%  { top: calc(100% - 235px); left: 20px; }
+            100% { top: 20px; left: 20px; }
+        }
+
+        /* first image */
+        .float-img.one {
+            animation: rectangleMove 18s linear infinite;
+        }
+
+        /* second image: same path, opposite phase */
+        .float-img.two {
+            animation: rectangleMove 18s linear infinite;
+            animation-delay: -9s; /* EXACTLY half cycle */
+        }
+
+        /* Funny image reveal */
+        .funny-wrap {
+            margin-top: 14px;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.5s ease;
+        }
+
+        .funny-wrap.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .funny-photo {
+            width: 100%;
+            max-width: 220px;
+            border-radius: 16px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+        }
+
+        .funny-caption {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .yes-photo {
+            width: 75%;              /* half of overlay card width */
+            max-width: 260px;        /* safety cap so it never gets big */
+            border-radius: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card" role="main" aria-labelledby="valTitle">
+        <div class="floating-photos">
+            <img src="images/floating1.jpeg" class="float-img one" alt="memory">
+            <img src="images/floating2.jpeg" class="float-img two" alt="memory">
+        </div>
+        <h1 id="valTitle">Guess who wants to be your Valentine Snehu👀 </h1>
+        <p class="lead" align="center">Someone’s been thinking about you a little too much lately 😌</p>
+
+        <div class="playground" id="arena" aria-hidden="false">
+            <div class="prompt">Will you be my Valentine Baby?</div>
+
+            <!-- Buttons: placed absolutely by CSS; JS will update left/top in px -->
+            <button id="yes" class="btn" aria-label="Yes, I will be your valentine">Okay fine, YES 💕</button>
+            <button id="no" class="btn" aria-label="No, I will not" >Nah 😶</button>
+
+            <!-- hearts container -->
+            <div class="hearts" id="hearts"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /*
+      Behavior:
+      - When cursor gets within `threshold` px of No button center, No jumps to a random position inside the playground
+        (we avoid positions too close to cursor or overlapping Yes).
+      - Each jump increases Yes button scale until a maximum.
+      - Clicking Yes opens a cute overlay and spawns some hearts.
+    */
+
+    (function(){
+        const arena = document.getElementById('arena');
+        const yes = document.getElementById('yes');
+        const no = document.getElementById('no');
+        const hearts = document.getElementById('hearts');
+
+        let yesScale = 1;
+        const growStep = 0.08;
+        const maxYesScale = 2.2;
+        const avoidThreshold = 130; // px — when mouse is closer than this to No's center, No moves
+        const minDistanceFromYes = 90; // px — keep No away from Yes center
+
+        // Ensure the buttons are positioned with px coordinates (absolute inside arena).
+        // We'll initialize them to nice starting positions:
+        function setInitialPositions(){
+            const rect = arena.getBoundingClientRect();
+            // center yes a bit left, no a bit right
+            const yesLeft = Math.max(8, rect.width/2 - 160);
+            const yesTop  = Math.max(8, rect.height/2 - (yes.offsetHeight/2));
+            const noLeft  = Math.min(rect.width - no.offsetWidth - 8, rect.width/2 + 40);
+            const noTop   = yesTop;
+            yes.style.left = yesLeft + 'px';
+            yes.style.top  = yesTop  + 'px';
+            no.style.left  = noLeft  + 'px';
+            no.style.top   = noTop   + 'px';
+            yes.style.transform = `scale(${yesScale})`;
+        }
+
+        // Get center absolute coordinates for an element
+        function getCenter(el){
+            const r = el.getBoundingClientRect();
+            return { x: r.left + r.width/2, y: r.top + r.height/2, w: r.width, h: r.height };
+        }
+
+        // Convert arena-local coords
+        function arenaRect(){
+            return arena.getBoundingClientRect();
+        }
+
+        // Attempt to find a new position for No that is:
+        // - fully inside arena
+        // - at least avoidThreshold px away from cursor
+        // - not too close to Yes
+        function findSafePosition(cursorX, cursorY){
+            const rect = arenaRect();
+            const maxW = rect.width - no.offsetWidth - 8;
+            const maxH = rect.height - no.offsetHeight - 8;
+            let attempt = 0;
+            while(attempt < 40){
+                const left = Math.random() * maxW + 8; // keep small margin
+                const top  = Math.random() * maxH + 8;
+                const absX = rect.left + left + no.offsetWidth/2;
+                const absY = rect.top  + top  + no.offsetHeight/2;
+                const toCursor = Math.hypot(absX - cursorX, absY - cursorY);
+                const yesCenter = getCenter(yes);
+                const toYes = Math.hypot(absX - yesCenter.x, absY - yesCenter.y);
+
+                if (toCursor > avoidThreshold && toYes > minDistanceFromYes) {
+                    return {left, top};
+                }
+                attempt++;
+            }
+            // fallback: position to a corner depending on cursor side
+            const fallbackLeft = (cursorX - rect.left) > rect.width/2 ? 8 : maxW;
+            const fallbackTop  = (cursorY - rect.top) > rect.height/2 ? 8 : maxH;
+            return { left: fallbackLeft, top: fallbackTop };
+        }
+
+        // Mousemove logic
+        function onMove(e){
+            const cursorX = e.clientX;
+            const cursorY = e.clientY;
+            const noCenter = getCenter(no);
+            const dist = Math.hypot(cursorX - noCenter.x, cursorY - noCenter.y);
+
+            if (dist < avoidThreshold) {
+                // move No
+                const pos = findSafePosition(cursorX, cursorY);
+                no.style.left = pos.left + 'px';
+                no.style.top  = pos.top  + 'px';
+
+                // increase Yes scale
+                yesScale = Math.min(maxYesScale, +(yesScale + growStep).toFixed(3));
+                yes.style.transform = `scale(${yesScale})`;
+            }
+        }
+
+        // create small floating heart for overlay effect
+        function spawnHeart(x, y){
+            const h = document.createElement('div');
+            h.className = 'heart';
+            // heart SVG (inline) - small, colored gradient via fill
+            h.innerHTML = `
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M12 21s-7-4.35-9-6.5C-0.2 11.6 1.6 7 6 7c1.9 0 3.2 1 4 2.1C11.8 8 13.1 7 15 7c4.4 0 6.2 4.6 3 7.5C19 16.65 12 21 12 21z" fill="#ff5c8a"/>
+      </svg>`;
+            // randomize starting position a little
+            h.style.left = (x + (Math.random()*60 - 30)) + 'px';
+            h.style.top  = (y + (Math.random()*40 - 20)) + 'px';
+            h.style.opacity = '0.98';
+            hearts.appendChild(h);
+            // remove after animation
+            setTimeout(()=> h.remove(), 1500);
+        }
+
+        // Show overlay on Yes click
+        function showYesOverlay(){
+            // create overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.setAttribute('role','dialog');
+            overlay.setAttribute('aria-modal','true');
+
+            overlay.innerHTML = `
+            <div class="overlayCard">
+                <img src="images/yes.jpeg" class="yes-photo" alt="Us">
+
+                <h2>Good Choice 💕 (As if you had any other choice)</h2>
+                <p>Guess we’re officially Valentine-ing now 😌</p>
+                <!-- funny image (hidden at first) -->
+                <div class="funny-wrap" id="funnyWrap">
+                  <img src="images/funny.jpeg" class="funny-photo" alt="">
+                  <p class="funny-caption">
+                    I had to include this. I’m sorry. (Not really) 😭
+                  </p>
+                </div>
+
+                <button id="closeBtn">Close</button>
+              </div>
+               `;
+
+            document.body.appendChild(overlay);
+
+            setTimeout(() => {
+                const funny = document.getElementById('funnyWrap');
+                if (funny) funny.classList.add('show');
+            }, 2000);
+
+            // spawn some hearts from the Yes button's position
+            const yc = getCenter(yes);
+            for(let i=0;i<10;i++){
+                setTimeout(()=> spawnHeart(yc.x - arenaRect().left, yc.y - arenaRect().top), i*80);
+            }
+
+            overlay.querySelector('#closeBtn').addEventListener('click', ()=> overlay.remove());
+            // also remove on backdrop click
+            overlay.addEventListener('click', (ev)=>{
+                if (ev.target === overlay) overlay.remove();
+            });
+        }
+
+        // Initialize
+        setInitialPositions();
+        // recompute initial positions on resize
+        window.addEventListener('resize', setInitialPositions);
+
+        // Listen to pointer movement over arena
+        arena.addEventListener('mousemove', onMove);
+
+        // Make Yes clickable — show overlay
+        yes.addEventListener('click', showYesOverlay);
+
+        // Fun: If the user somehow clicks No (possible on slow devices), show playful message:
+        no.addEventListener('click', function(){
+            // small wobble and tiny message
+            no.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(0)' }], { duration: 250 });
+            // also briefly increase yes scale as encouragement
+            yesScale = Math.min(maxYesScale, yesScale + 0.03);
+            yes.style.transform = `scale(${yesScale})`;
+        });
+
+        // Accessibility: allow keyboard activation of Yes
+        yes.setAttribute('tabindex','0');
+        no.setAttribute('tabindex','0');
+        yes.addEventListener('keydown', (e)=> { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showYesOverlay(); } });
+
+        // For small touch devices: if pointer is touch we don't want the button to be impossible to tap.
+        // On first touchstart inside arena, temporarily reduce the avoidance.
+        let touchMode = false;
+        arena.addEventListener('touchstart', ()=>{
+            touchMode = true;
+            // reduce threshold so no becomes easier to tap
+            // we'll reduce avoidThreshold by half - implement by overwriting local const via closure? Instead we just disable movement for touch.
+            arena.removeEventListener('mousemove', onMove);
+        }, { once:true });
+
+    })();
+</script>
+</body>
+</html>
