@@ -426,12 +426,30 @@
         yes.addEventListener('click', showYesOverlay);
 
         // Fun: If the user somehow clicks No (possible on slow devices), show playful message:
-        no.addEventListener('click', function(){
-            // small wobble and tiny message
-            no.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(0)' }], { duration: 250 });
-            // also briefly increase yes scale as encouragement
-            yesScale = Math.min(maxYesScale, yesScale + 0.03);
-            yes.style.transform = `scale(${yesScale})`;
+        no.addEventListener('click', function (e) {
+
+        // 📱 MOBILE PATCH
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            alert("Use Laptop Adhed umar ki Pyari Aurat 😌💻");
+
+            return; // stop here on mobile
+        }
+
+        // 🖥️ DESKTOP BEHAVIOUR (unchanged)
+        no.animate(
+        [
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(-8px)' },
+            { transform: 'translateX(0)' }
+        ],
+            { duration: 250 }
+        );
+
+        yesScale = Math.min(maxYesScale, yesScale + 0.03);
+        yes.style.transform = `scale(${yesScale})`;
         });
 
         // Accessibility: allow keyboard activation of Yes
@@ -453,3 +471,4 @@
 </script>
 </body>
 </html>
+
